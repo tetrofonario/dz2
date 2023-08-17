@@ -28,4 +28,38 @@ sudo docker network create pg-net
 sudo docker run --name pg-server --network pg-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 -v /var/lib/postgres:/var/lib/postgresql/data postgres:15
 -- 3. Запускаем отдельный контейнер с клиентом в общей сети с БД:
 sudo docker run -it --rm --network pg-net --name pg-client postgres:15 psql -h pg-server -U postgres
-вводим пароль postgres
+вводим пароль postgrads
+создаем табличку
+postgres=# CREATE DATABASE iso;
+CREATE DATABASE
+postgres=# SELECT current_database();
+ postgres
+
+postgres=# \c iso
+You are now connected to database "iso" as user "postgres".
+iso=# CREATE TABLE test (i serial, amount int);
+CREATE TABLE
+iso=# INSERT INTO test(amount) VALUES (100);
+INSERT 0 1
+iso=# INSERT INTO test(amount) VALUES (500);
+INSERT 0 1
+iso=# INSERT INTO test(amount) VALUES (500);SELECT * FROM test;
+INSERT 0 1
+ 1 |    100
+ 2 |    500
+ 3 |    500
+Удаляем контейнер
+docker stop pg-server     docker rm pg-server
+
+создаем заново и подключаемся
+sudo docker run --name pg-server --network pg-net -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 -v /var/lib/postgres:/var/lib/postgresql/data postgres:15
+sudo docker run -it --rm --network pg-net --name pg-client postgres:15 psql -h pg-server -U postgres
+
+iso=# select * from test;
+ i | amount
+---+--------
+ 1 |    100
+ 2 |    500
+ 3 |    500
+(3 rows)
+Данные на месте.
